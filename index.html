@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penjana Kandungan Pasaran Sasaran</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Penjana Kandungan Pasaran Sasaran</h1>
+        
+        <div class="input-section">
+            <form id="targetMarketForm">
+                <label for="targetMarket">Pasaran Sasaran:</label>
+                <input type="text" id="targetMarket" required 
+                       placeholder="Contoh: Pemilik Restoran Kecil di Malaysia">
+                <button type="submit">Jana Kandungan</button>
+            </form>
+        </div>
+
+        <div class="controls-section">
+            <input type="text" id="filterInput" placeholder="Tapis hasil...">
+            <select id="sortSelect">
+                <option value="">Pilih Susunan...</option>
+                <option value="painPoint">Isu</option>
+                <option value="relevance">Kesesuaian</option>
+            </select>
+            <button id="exportBtn">Eksport ke CSV</button>
+        </div>
+
+        <div class="results-section">
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Isu</th>
+                        <th>Cadangan Kandungan</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
