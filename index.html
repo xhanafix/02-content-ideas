@@ -12,24 +12,52 @@
         
         <div class="input-section">
             <form id="targetMarketForm">
-                <label for="targetMarket">Pasaran Sasaran:</label>
-                <input type="text" id="targetMarket" required 
-                       placeholder="Contoh: Pemilik Restoran Kecil di Malaysia">
-                <button type="submit">Jana Kandungan</button>
+                <div class="form-group">
+                    <label for="productService">Produk/Perkhidmatan:</label>
+                    <input type="text" id="productService" required 
+                           placeholder="Contoh: Perisian perakaunan mudah alih">
+                </div>
+                <div class="form-group">
+                    <label for="targetMarket">Pasaran Sasaran:</label>
+                    <input type="text" id="targetMarket" required 
+                           placeholder="Contoh: Pemilik Restoran Kecil di Malaysia">
+                </div>
+                <div class="form-group">
+                    <label for="contentCount">Jumlah Isu:</label>
+                    <select id="contentCount">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="20" selected>20</option>
+                    </select>
+                </div>
+                <button type="submit" class="primary-btn">Jana Kandungan</button>
             </form>
         </div>
 
         <div class="controls-section">
-            <input type="text" id="filterInput" placeholder="Tapis hasil...">
-            <select id="sortSelect">
-                <option value="">Pilih Susunan...</option>
-                <option value="painPoint">Isu</option>
-                <option value="relevance">Kesesuaian</option>
-            </select>
-            <button id="exportBtn">Eksport ke CSV</button>
+            <div class="filter-sort">
+                <input type="text" id="filterInput" placeholder="Tapis hasil...">
+                <select id="sortSelect">
+                    <option value="">Pilih Susunan...</option>
+                    <option value="painPoint">Isu</option>
+                    <option value="relevance">Kesesuaian</option>
+                </select>
+            </div>
+            <div class="action-buttons">
+                <button id="exportBtn">Eksport ke CSV</button>
+                <div class="api-controls">
+                    <button id="changeApiKey">Tukar Kunci API</button>
+                    <button id="clearApiKey">Padam Kunci API</button>
+                </div>
+            </div>
         </div>
 
         <div class="results-section">
+            <div class="results-header">
+                <h2>Hasil Kandungan</h2>
+                <div class="summary" id="resultsSummary"></div>
+            </div>
             <table id="resultsTable">
                 <thead>
                     <tr>

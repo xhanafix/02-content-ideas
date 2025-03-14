@@ -13,6 +13,7 @@ class ContentGenerator {
         this.sortSelect = document.getElementById('sortSelect');
         this.exportBtn = document.getElementById('exportBtn');
         this.resultsTable = document.getElementById('resultsTable');
+        this.resultsSummary = document.getElementById('resultsSummary');
 
         this.checkApiKey();
         this.setupEventListeners();
@@ -36,15 +37,7 @@ class ContentGenerator {
         this.sortSelect.addEventListener('change', () => this.sortResults());
         this.exportBtn.addEventListener('click', () => this.exportToCSV());
 
-        // Add API key management buttons to the UI
-        const apiKeyControls = document.createElement('div');
-        apiKeyControls.className = 'api-controls';
-        apiKeyControls.innerHTML = `
-            <button id="changeApiKey">Tukar Kunci API</button>
-            <button id="clearApiKey">Padam Kunci API</button>
-        `;
-        document.querySelector('.controls-section').appendChild(apiKeyControls);
-
+        // API key buttons
         document.getElementById('changeApiKey').addEventListener('click', () => this.changeApiKey());
         document.getElementById('clearApiKey').addEventListener('click', () => this.clearApiKey());
     }
@@ -72,8 +65,10 @@ class ContentGenerator {
         const loaderContainer = document.createElement('div');
         loaderContainer.className = 'loader-container';
         loaderContainer.innerHTML = `
-            <div class="loader"></div>
-            <div class="loader-text">Sedang menjana kandungan...</div>
+            <div class="loader-content">
+                <div class="loader"></div>
+                <div class="loader-text">Sedang menjana kandungan...</div>
+            </div>
         `;
         document.body.appendChild(loaderContainer);
         this.loader = loaderContainer;
@@ -95,7 +90,15 @@ class ContentGenerator {
             return;
         }
 
+        const productService = document.getElementById('productService').value;
         const targetMarket = document.getElementById('targetMarket').value;
+        const contentCount = document.getElementById('contentCount').value;
+        
+        if (!productService.trim()) {
+            alert('Sila masukkan produk atau perkhidmatan anda.');
+            return;
+        }
+        
         if (!targetMarket.trim()) {
             alert('Sila masukkan pasaran sasaran.');
             return;
@@ -103,11 +106,12 @@ class ContentGenerator {
         
         try {
             this.showLoader();
-            const response = await this.fetchAIContent(targetMarket);
+            this.clearResults();
+            const response = await this.fetchAIContent(productService, targetMarket, contentCount);
             if (!response.success) {
                 throw new Error(response.error || 'Ralat tidak diketahui');
             }
-            this.displayResults(response.data);
+            this.displayResults(response.data, productService, targetMarket);
         } catch (error) {
             console.error('Error:', error);
             if (error.message.includes('401') || error.message.includes('unauthorized')) {
@@ -121,22 +125,42 @@ class ContentGenerator {
         }
     }
 
-    async fetchAIContent(targetMarket) {
+    clearResults() {
+        const tbody = this.resultsTable.querySelector('tbody');
+        tbody.innerHTML = '';
+        this.resultsSummary.innerHTML = '';
+    }
+
+    async fetchAIContent(productService, targetMarket, contentCount) {
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+            const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout
 
-            const prompt = `Sila berikan analisis untuk pasaran sasaran: ${targetMarket}
+            const prompt = `Sila berikan analisis untuk produk/perkhidmatan berikut: "${productService}" 
+                           yang menyasarkan pasaran: "${targetMarket}"
+                           
+                           Sila fokus pada bagaimana ${productService} boleh membantu menyelesaikan masalah 
+                           atau memenuhi keperluan ${targetMarket}.
+                           
                            Format JSON yang diperlukan:
                            {
+                             "summary": "Ringkasan keseluruhan tentang ${productService} untuk ${targetMarket}",
                              "painPoints": [
                                {
-                                 "issue": "Isu utama",
-                                 "contentIdeas": ["Idea 1", "Idea 2", "Idea 3", "Idea 4", "Idea 5"]
+                                 "issue": "Isu utama yang dihadapi oleh ${targetMarket}",
+                                 "contentIdeas": [
+                                   "Idea kandungan 1 yang menunjukkan bagaimana ${productService} menyelesaikan isu ini",
+                                   "Idea kandungan 2 yang menunjukkan bagaimana ${productService} menyelesaikan isu ini",
+                                   "Idea kandungan 3 yang menunjukkan bagaimana ${productService} menyelesaikan isu ini",
+                                   "Idea kandungan 4 yang menunjukkan bagaimana ${productService} menyelesaikan isu ini",
+                                   "Idea kandungan 5 yang menunjukkan bagaimana ${productService} menyelesaikan isu ini"
+                                 ]
                                }
                              ]
                            }
-                           Sila berikan 20 isu utama dengan 5 idea kandungan untuk setiap isu.`;
+                           
+                           Sila berikan ${contentCount} isu utama dengan 5 idea kandungan untuk setiap isu.
+                           Setiap idea kandungan perlu spesifik dan berkaitan langsung dengan produk/perkhidmatan untuk pasaran sasaran.`;
 
             const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
@@ -201,10 +225,13 @@ class ContentGenerator {
 
             return {
                 success: true,
-                data: parsedContent.painPoints.map(point => ({
-                    painPoint: point.issue,
-                    contentIdeas: point.contentIdeas
-                }))
+                data: {
+                    summary: parsedContent.summary || '',
+                    painPoints: parsedContent.painPoints.map(point => ({
+                        painPoint: point.issue,
+                        contentIdeas: point.contentIdeas
+                    }))
+                }
             };
         } catch (error) {
             return {
@@ -214,11 +241,21 @@ class ContentGenerator {
         }
     }
 
-    displayResults(results) {
+    displayResults(data, productService, targetMarket) {
+        const { summary, painPoints } = data;
         const tbody = this.resultsTable.querySelector('tbody');
         tbody.innerHTML = '';
 
-        if (!Array.isArray(results) || results.length === 0) {
+        // Display summary
+        if (summary) {
+            this.resultsSummary.innerHTML = `
+                <p><strong>Produk/Perkhidmatan:</strong> ${productService}</p>
+                <p><strong>Pasaran Sasaran:</strong> ${targetMarket}</p>
+                <p><strong>Ringkasan:</strong> ${summary}</p>
+            `;
+        }
+
+        if (!Array.isArray(painPoints) || painPoints.length === 0) {
             const row = tbody.insertRow();
             const cell = row.insertCell(0);
             cell.colSpan = 2;
@@ -226,37 +263,72 @@ class ContentGenerator {
             return;
         }
 
-        // Animate results with longer delays
-        results.forEach((result, index) => {
+        // Animate results with staggered delay
+        painPoints.forEach((result, index) => {
             const row = tbody.insertRow();
+            row.classList.add('result-row');
             row.style.opacity = '0';
-            row.style.transition = 'opacity 0.5s ease-in'; // Increased transition duration
+            row.style.transform = 'translateY(20px)';
+            row.style.transition = 'opacity 0.5s ease-in, transform 0.5s ease-out';
             
             const cell1 = row.insertCell(0);
             const cell2 = row.insertCell(1);
+            
+            cell1.className = 'pain-point-cell';
+            cell2.className = 'content-ideas-cell';
 
             cell1.textContent = result.painPoint || 'Tidak dinyatakan';
-            cell2.innerHTML = Array.isArray(result.contentIdeas) 
-                ? result.contentIdeas.map(idea => 
-                    `<div class="content-idea">${idea}</div>`
-                  ).join('')
-                : '<div class="content-idea">Tiada idea kandungan</div>';
+            
+            if (Array.isArray(result.contentIdeas)) {
+                const ideasContainer = document.createElement('div');
+                ideasContainer.className = 'content-ideas-container';
+                
+                result.contentIdeas.forEach(idea => {
+                    const ideaElement = document.createElement('div');
+                    ideaElement.className = 'content-idea';
+                    ideaElement.textContent = idea;
+                    ideasContainer.appendChild(ideaElement);
+                });
+                
+                cell2.appendChild(ideasContainer);
+            } else {
+                cell2.innerHTML = '<div class="content-idea">Tiada idea kandungan</div>';
+            }
 
-            // Longer delay between each row animation
+            // Staggered animation
             setTimeout(() => {
                 row.style.opacity = '1';
-            }, index * 100); // Increased from 50ms to 100ms
+                row.style.transform = 'translateY(0)';
+            }, index * 100);
         });
     }
 
     filterResults() {
         const filterText = this.filterInput.value.toLowerCase();
         const rows = this.resultsTable.querySelectorAll('tbody tr');
+        let visibleCount = 0;
 
         rows.forEach(row => {
             const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(filterText) ? '' : 'none';
+            const visible = text.includes(filterText);
+            row.style.display = visible ? '' : 'none';
+            if (visible) visibleCount++;
         });
+
+        // Update visible count
+        const totalCount = rows.length;
+        const filterInfo = document.createElement('div');
+        filterInfo.className = 'filter-info';
+        filterInfo.textContent = filterText ? 
+            `Menunjukkan ${visibleCount} daripada ${totalCount} hasil untuk "${filterText}"` : 
+            `Menunjukkan ${totalCount} hasil`;
+            
+        const existingInfo = document.querySelector('.filter-info');
+        if (existingInfo) {
+            existingInfo.remove();
+        }
+        
+        this.resultsSummary.appendChild(filterInfo);
     }
 
     sortResults() {
@@ -277,17 +349,44 @@ class ContentGenerator {
     }
 
     exportToCSV() {
-        const rows = Array.from(this.resultsTable.querySelectorAll('tr'));
-        const csvContent = rows.map(row => {
-            return Array.from(row.cells)
-                .map(cell => `"${cell.textContent.replace(/"/g, '""')}"`)
-                .join(',');
-        }).join('\n');
+        const productService = document.getElementById('productService').value || 'Tidak dinyatakan';
+        const targetMarket = document.getElementById('targetMarket').value || 'Tidak dinyatakan';
+        const summary = this.resultsSummary.querySelector('p:nth-child(3)')?.textContent.replace('Ringkasan: ', '') || '';
+        
+        // Header row
+        let csvContent = `"Produk/Perkhidmatan","${productService.replace(/"/g, '""')}"\n`;
+        csvContent += `"Pasaran Sasaran","${targetMarket.replace(/"/g, '""')}"\n`;
+        csvContent += `"Ringkasan","${summary.replace(/"/g, '""')}"\n\n`;
+        
+        // Column headers
+        csvContent += '"Isu","Cadangan Kandungan"\n';
+        
+        // Data rows
+        const rows = Array.from(this.resultsTable.querySelectorAll('tbody tr'));
+        rows.forEach(row => {
+            const painPoint = row.cells[0].textContent.replace(/"/g, '""');
+            const contentIdeasContainer = row.cells[1].querySelector('.content-ideas-container');
+            
+            if (contentIdeasContainer) {
+                const ideas = Array.from(contentIdeasContainer.querySelectorAll('.content-idea'));
+                ideas.forEach((idea, index) => {
+                    const ideaText = idea.textContent.replace(/"/g, '""');
+                    if (index === 0) {
+                        csvContent += `"${painPoint}","${ideaText}"\n`;
+                    } else {
+                        csvContent += `,"${ideaText}"\n`;
+                    }
+                });
+            } else {
+                csvContent += `"${painPoint}","Tiada idea kandungan"\n`;
+            }
+        });
 
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'kandungan_pasaran_sasaran.csv';
+        const date = new Date().toISOString().slice(0, 10);
+        link.download = `kandungan_pasaran_sasaran_${date}.csv`;
         link.click();
     }
 }
