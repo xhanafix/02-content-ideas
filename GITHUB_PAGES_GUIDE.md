@@ -66,7 +66,16 @@ Kerana GitHub Pages adalah platform hosting statik, aplikasi tidak boleh menyimp
 4. Klik pada butang "Pilih Fail Sejarah JSON" dan pilih fail JSON yang telah dieksport sebelum ini.
 5. Pilih sama ada untuk menggabungkan sejarah atau menggantikan sepenuhnya.
 
-## Langkah 5: Berkongsi Sejarah dengan Pengguna Lain
+## Langkah 5: Menggunakan Ciri Isu Pasaran Baharu
+
+Ciri baharu membolehkan anda menentukan isu atau masalah spesifik yang dihadapi oleh pasaran sasaran anda:
+
+1. Selepas memasukkan produk/perkhidmatan dan pasaran sasaran, anda boleh mengisi ruangan "Isu/Masalah Pasaran".
+2. Masukkan isu-isu spesifik yang dihadapi oleh pasaran sasaran anda, seperti "Kesukaran menguruskan inventori, Kekurangan masa untuk perakaunan".
+3. Isu-isu ini akan digunakan untuk memfokuskan kandungan yang dijana oleh AI.
+4. Isu pasaran juga akan disimpan dalam sejarah carian dan termasuk dalam eksport fail CSV atau teks.
+
+## Langkah 6: Berkongsi Sejarah dengan Pengguna Lain
 
 Anda boleh berkongsi sejarah carian dengan pengguna lain melalui langkah-langkah berikut:
 
@@ -74,7 +83,7 @@ Anda boleh berkongsi sejarah carian dengan pengguna lain melalui langkah-langkah
 2. Kongsi fail JSON ini dengan pengguna lain (melalui e-mel, perkhidmatan perkongsian fail, dll.).
 3. Pengguna lain boleh mengimport fail JSON ke dalam aplikasi mereka sendiri.
 
-## Langkah 6: Kemaskini Aplikasi
+## Langkah 7: Kemaskini Aplikasi
 
 Jika anda membuat perubahan pada aplikasi, anda perlu mengemaskini repositori GitHub anda:
 

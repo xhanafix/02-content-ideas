@@ -174,6 +174,7 @@ class ContentGenerator {
 
         const productService = document.getElementById('productService').value;
         const targetMarket = document.getElementById('targetMarket').value;
+        const marketIssue = document.getElementById('marketIssue').value;
         const contentCount = document.getElementById('contentCount').value;
         
         if (!productService.trim()) {
@@ -189,7 +190,7 @@ class ContentGenerator {
         try {
             this.showLoader();
             this.clearResults();
-            const response = await this.fetchAIContent(productService, targetMarket, contentCount);
+            const response = await this.fetchAIContent(productService, targetMarket, contentCount, marketIssue);
             if (!response.success) {
                 // Handle specific error cases with more user-friendly messages
                 if (response.error.includes('JSON')) {
@@ -204,6 +205,7 @@ class ContentGenerator {
             const historyItem = {
                 productService,
                 targetMarket,
+                marketIssue,
                 contentCount,
                 ...response.data,
                 timestamp: new Date().toISOString()
@@ -215,7 +217,7 @@ class ContentGenerator {
             this.saveHistoryToTextFile(historyItem);
             
             this.displaySearchHistory();
-            this.displayResults(response.data, productService, targetMarket);
+            this.displayResults(response.data, productService, targetMarket, marketIssue);
         } catch (error) {
             console.error('Error in handleSubmit:', error);
             
@@ -245,6 +247,11 @@ class ContentGenerator {
             let textContent = `=== CARIAN PADA ${dateTime} ===\n\n`;
             textContent += `PRODUK/PERKHIDMATAN: ${historyItem.productService}\n`;
             textContent += `PASARAN SASARAN: ${historyItem.targetMarket}\n`;
+            
+            if (historyItem.marketIssue) {
+                textContent += `ISU PASARAN: ${historyItem.marketIssue}\n`;
+            }
+            
             textContent += `JUMLAH ISU: ${historyItem.painPoints ? historyItem.painPoints.length : 0}\n\n`;
             
             if (historyItem.summary) {
@@ -296,13 +303,21 @@ class ContentGenerator {
         this.resultsSummary.innerHTML = '';
     }
 
-    async fetchAIContent(productService, targetMarket, contentCount) {
+    async fetchAIContent(productService, targetMarket, contentCount, marketIssue) {
         try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout
 
+            let issueContext = "";
+            if (marketIssue && marketIssue.trim()) {
+                issueContext = `Pasaran sasaran menghadapi isu berikut: "${marketIssue}"
+                               Sila fokus kepada penyelesaian untuk isu-isu ini dalam cadangan kandungan.`;
+            }
+
             const prompt = `Sila berikan analisis untuk produk/perkhidmatan berikut: "${productService}" 
                            yang menyasarkan pasaran: "${targetMarket}"
+                           
+                           ${issueContext}
                            
                            Sila fokus pada bagaimana ${productService} boleh membantu menyelesaikan masalah 
                            atau memenuhi keperluan ${targetMarket}.
@@ -562,7 +577,7 @@ class ContentGenerator {
         return jsonStr;
     }
 
-    displayResults(data, productService, targetMarket) {
+    displayResults(data, productService, targetMarket, marketIssue) {
         if (!this.resultsTable || !this.resultsSummary) {
             console.error('Results table or summary element not found');
             return;
@@ -579,11 +594,18 @@ class ContentGenerator {
 
         // Display summary
         if (summary && this.resultsSummary) {
-            this.resultsSummary.innerHTML = `
+            let summaryHtml = `
                 <p><strong>Produk/Perkhidmatan:</strong> ${productService}</p>
                 <p><strong>Pasaran Sasaran:</strong> ${targetMarket}</p>
-                <p><strong>Ringkasan:</strong> ${summary}</p>
             `;
+            
+            if (marketIssue && marketIssue.trim()) {
+                summaryHtml += `<p><strong>Isu Pasaran:</strong> ${marketIssue}</p>`;
+            }
+            
+            summaryHtml += `<p><strong>Ringkasan:</strong> ${summary}</p>`;
+            
+            this.resultsSummary.innerHTML = summaryHtml;
         }
 
         if (!Array.isArray(painPoints) || painPoints.length === 0) {
@@ -699,11 +721,13 @@ class ContentGenerator {
     exportToCSV() {
         const productService = document.getElementById('productService').value || 'Tidak dinyatakan';
         const targetMarket = document.getElementById('targetMarket').value || 'Tidak dinyatakan';
+        const marketIssue = document.getElementById('marketIssue').value || 'Tidak dinyatakan';
         const summary = this.resultsSummary.querySelector('p:nth-child(3)')?.textContent.replace('Ringkasan: ', '') || '';
         
         // Header row
         let csvContent = `"Produk/Perkhidmatan","${productService.replace(/"/g, '""')}"\n`;
         csvContent += `"Pasaran Sasaran","${targetMarket.replace(/"/g, '""')}"\n`;
+        csvContent += `"Isu Pasaran","${marketIssue.replace(/"/g, '""')}"\n`;
         csvContent += `"Ringkasan","${summary.replace(/"/g, '""')}"\n\n`;
         
         // Column headers
@@ -796,7 +820,7 @@ class ContentGenerator {
                 
                 const dateTime = new Date(item.timestamp).toLocaleString('ms-MY');
                 
-                historyItem.innerHTML = `
+                let historyDetailsHtml = `
                     <div class="history-content">
                         <div class="history-header">
                             <span class="history-date">${dateTime}</span>
@@ -808,10 +832,18 @@ class ContentGenerator {
                         <div class="history-details">
                             <strong>Produk/Perkhidmatan:</strong> ${item.productService || 'Tidak dinyatakan'}<br>
                             <strong>Pasaran Sasaran:</strong> ${item.targetMarket || 'Tidak dinyatakan'}<br>
-                            <strong>Jumlah Isu:</strong> ${item.painPoints && Array.isArray(item.painPoints) ? item.painPoints.length : 0}
+                `;
+                
+                if (item.marketIssue) {
+                    historyDetailsHtml += `<strong>Isu Pasaran:</strong> ${item.marketIssue}<br>`;
+                }
+                
+                historyDetailsHtml += `<strong>Jumlah Isu:</strong> ${item.painPoints && Array.isArray(item.painPoints) ? item.painPoints.length : 0}
                         </div>
                     </div>
                 `;
+                
+                historyItem.innerHTML = historyDetailsHtml;
                 
                 historyList.appendChild(historyItem);
             } catch (e) {
@@ -923,6 +955,11 @@ class ContentGenerator {
                 targetMarketInput.value = item.targetMarket || '';
             }
             
+            const marketIssueInput = document.getElementById('marketIssue');
+            if (marketIssueInput) {
+                marketIssueInput.value = item.marketIssue || '';
+            }
+            
             // Find the closest option to the original contentCount if the select exists
             const select = document.getElementById('contentCount');
             if (select && select.options && select.options.length > 0) {
@@ -938,7 +975,7 @@ class ContentGenerator {
             
             // Display results (which now has its own error handling)
             if (item.painPoints) {
-                this.displayResults(item, item.productService || '', item.targetMarket || '');
+                this.displayResults(item, item.productService || '', item.targetMarket || '', item.marketIssue || '');
             } else {
                 console.warn('History item has no painPoints data');
                 
@@ -992,6 +1029,11 @@ class ContentGenerator {
                 textContent += `=== CARIAN #${historyIndex + 1} - ${dateTime} ===\n\n`;
                 textContent += `PRODUK/PERKHIDMATAN: ${historyItem.productService}\n`;
                 textContent += `PASARAN SASARAN: ${historyItem.targetMarket}\n`;
+                
+                if (historyItem.marketIssue) {
+                    textContent += `ISU PASARAN: ${historyItem.marketIssue}\n`;
+                }
+                
                 textContent += `JUMLAH ISU: ${historyItem.painPoints ? historyItem.painPoints.length : 0}\n\n`;
                 
                 if (historyItem.summary) {

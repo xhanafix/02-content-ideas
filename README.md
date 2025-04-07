@@ -5,6 +5,7 @@ Alat yang membantu peniaga dan pemasar untuk menjana idea kandungan berdasarkan 
 ## Ciri-ciri
 
 - **Jana Kandungan Pasaran Sasaran**: Dapatkan analisis mendalam tentang masalah pasaran sasaran dan idea kandungan berdasarkan produk/perkhidmatan anda.
+- **Input Isu Pasaran**: Nyatakan isu atau masalah spesifik yang dihadapi oleh pasaran sasaran anda untuk mendapatkan kandungan yang lebih fokus.
 - **Carian Tersuai**: Pilih jumlah isu (5-20) yang ingin dipaparkan.
 - **Penapisan & Penyusunan**: Tapis hasil berdasarkan kata kunci dan susun mengikut isu atau kesesuaian.
 - **Eksport ke CSV**: Simpan hasil untuk rujukan masa hadapan dalam format CSV.
@@ -18,10 +19,11 @@ Alat yang membantu peniaga dan pemasar untuk menjana idea kandungan berdasarkan 
 
 1. Masukkan produk atau perkhidmatan anda.
 2. Nyatakan pasaran sasaran anda.
-3. Pilih jumlah isu yang ingin dipaparkan.
-4. Klik "Jana Kandungan" untuk dapatkan hasil.
-5. Anda boleh menapis, menyusun, atau mengeksport hasil.
-6. Lihat sejarah carian dengan mengklik "Tunjuk Sejarah" untuk muat semula hasil carian yang lepas.
+3. (Opsyenal) Masukkan isu atau masalah spesifik yang dihadapi oleh pasaran sasaran anda.
+4. Pilih jumlah isu yang ingin dipaparkan.
+5. Klik "Jana Kandungan" untuk dapatkan hasil.
+6. Anda boleh menapis, menyusun, atau mengeksport hasil.
+7. Lihat sejarah carian dengan mengklik "Tunjuk Sejarah" untuk muat semula hasil carian yang lepas.
 
 ## Pengurusan Kunci API
 
@@ -31,7 +33,7 @@ Alat yang membantu peniaga dan pemasar untuk menjana idea kandungan berdasarkan 
 
 ## Ciri Sejarah Carian
 
-Fungsi baharu:
+Fungsi sejarah carian:
 
 - **Simpan Carian**: Semua hasil carian secara automatik disimpan untuk rujukan masa hadapan.
 - **Muat Semula**: Klik butang "Muat" untuk mengisi semula hasil tanpa perlu melakukan carian semula.
@@ -48,6 +50,7 @@ Fungsi baharu:
 Fail teks eksport mengandungi maklumat terperinci seperti:
 - Tarikh dan masa carian
 - Produk/perkhidmatan dan pasaran sasaran
+- Isu pasaran (jika dimasukkan)
 - Ringkasan keseluruhan
 - Senarai isu dengan cadangan kandungan untuk setiap isu
 
